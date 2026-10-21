@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuentra tu ruta UPB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Concepto: web de movilidad con lenguaje de viaje (pase de abordar, ruta punteada, sellos).
+   Una sola hoja que va de "qué opciones hay" a "cuál me sirve" (test) a "qué sigue". */
+:root{
+  --paper:#F1F4F1;
+  --card:#FFFFFF;
+  --ink:#0F1E2B;
+  --muted:#4F6170;
+  --line:#CFD8D3;
+  --route:#D2371D;
+  --route-ink:#FFFFFF;
+  --teal:#18705F;
+  --teal-soft:#DDEFE9;
+  --route-soft:#FBE6E0;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1721;--card:#14242F;--ink:#E9F0ED;--muted:#9FB2BD;--line:#27394640;
+    --route:#FF6B4E;--route-ink:#1A0B07;--teal:#5CD0B5;--teal-soft:#123A33;--route-soft:#3A1D16;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C1721;--card:#14242F;--ink:#E9F0ED;--muted:#9FB2BD;--line:#273946;
+  --route:#FF6B4E;--route-ink:#1A0B07;--teal:#5CD0B5;--teal-soft:#123A33;--route-soft:#3A1D16;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--line:#273946}}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;padding-inline:clamp(16px,4vw,40px);padding-block:0 48px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1120px;margin-inline:auto}
+:focus-visible{outline:3px solid var(--route);outline-offset:3px;border-radius:4px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* Barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin-inline:calc(-1*clamp(16px,4vw,40px));padding-inline:clamp(16px,4vw,40px)}
+.top .wrap{display:flex;align-items:center;gap:20px;min-height:56px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:18px;white-space:nowrap;text-decoration:none}
+.brand span{color:var(--route)}
+.nav{display:flex;gap:4px;overflow-x:auto;margin-left:auto;min-width:0;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:8px 12px;border-radius:99px;text-decoration:none;font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+.nav a:hover{color:var(--ink);background:var(--card)}
+
+/* Hero */
+.hero{padding-block:56px 40px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center}
+.hero h1{font-size:clamp(38px,6vw,68px);font-weight:800}
+.hero h1 em{font-style:normal;color:var(--route)}
+.hero .lead{font-size:18px;color:var(--muted);max-width:52ch;margin-top:20px}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:14px 22px;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--route);border-color:var(--route);color:var(--route-ink)}
+.btn:hover{transform:translateY(-1px)}
+.btn.small{padding:9px 14px;font-size:14px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:36px;padding-top:20px;border-top:1px dashed var(--line)}
+.facts div{min-width:0}
+.facts b{font-family:var(--f-display);font-size:26px;display:block;line-height:1}
+.facts span{font-size:13px;color:var(--muted)}
+
+/* Pase de abordar */
+.pass{background:var(--card);border:1.5px solid var(--ink);border-radius:18px;position:relative;transform:rotate(1.6deg);box-shadow:8px 8px 0 var(--ink)}
+.pass-head{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:var(--ink);color:var(--paper);border-radius:16px 16px 0 0;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;gap:12px}
+.pass-route{display:flex;align-items:center;gap:12px;padding:22px 22px 8px}
+.pass-route .code{font-family:var(--f-display);font-size:clamp(40px,6vw,60px);font-weight:800;line-height:1}
+.pass-route .code.q{color:var(--route)}
+.pass-route svg{flex:1;min-width:40px;height:24px;color:var(--muted)}
+.pass-city{display:flex;justify-content:space-between;padding:0 22px 18px;font-size:13px;color:var(--muted)}
+.pass-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px;padding:18px 22px;border-top:2px dashed var(--line)}
+.pass-grid dt{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pass-grid dd{margin:2px 0 0;font-weight:600;font-size:15px}
+.stamp{position:absolute;right:-10px;bottom:56px;border:3px solid var(--route);color:var(--route);border-radius:8px;padding:6px 12px;font-family:var(--f-mono);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;transform:rotate(-9deg);background:var(--card);opacity:.95}
+
+/* Secciones */
+section{padding-block:56px;scroll-margin-top:64px}
+.sec-head{display:grid;gap:10px;max-width:68ch;margin-bottom:32px}
+.sec-head h2{font-size:clamp(28px,4vw,42px);font-weight:700}
+.sec-head p{color:var(--muted);font-size:17px}
+.band{background:var(--card);margin-inline:calc(-1*clamp(16px,4vw,40px));padding-inline:clamp(16px,4vw,40px);border-block:1px solid var(--line)}
+
+/* Hallazgos */
+.findings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.panel{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--paper);min-width:0}
+.band .panel{background:var(--paper)}
+.panel h3{font-size:19px;font-weight:700;margin-bottom:4px}
+.panel .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:14px}
+.bar .track{grid-column:1 / -1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--ink);border-radius:99px}
+.bar.hot .fill{background:var(--route)}
+.bar .n{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.quote-big{font-family:var(--f-display);font-size:clamp(46px,6vw,72px);font-weight:800;color:var(--route);line-height:1}
+.note{font-size:13px;color:var(--muted);margin-top:18px;max-width:80ch}
+
+/* Test */
+.quiz{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:32px;align-items:start}
+.quiz-side{display:grid;gap:14px;align-content:start}
+.quiz-side h2{font-size:clamp(30px,4.4vw,48px);font-weight:800}
+.quiz-side p{color:var(--muted);font-size:17px}
+.box{background:var(--card);border:1.5px solid var(--ink);border-radius:18px;padding:clamp(20px,3vw,32px);min-width:0}
+.prog{display:flex;gap:6px;margin-bottom:18px}
+.prog i{flex:1;height:6px;border-radius:99px;background:var(--line)}
+.prog i.on{background:var(--route)}
+.qnum{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.box h3{font-size:clamp(22px,3vw,28px);margin:6px 0 18px}
+.opts{display:grid;gap:10px;border:0;padding:0;margin:0}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;cursor:pointer;width:100%;height:100%;margin:0}
+.opt label{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;background:var(--paper)}
+.opt label small{display:block;color:var(--muted);font-size:13px}
+.opt label::before{content:"";flex:none;width:18px;height:18px;margin-top:2px;border-radius:50%;border:2px solid var(--muted)}
+.opt input:checked + label{border-color:var(--route);background:var(--route-soft)}
+.opt input:checked + label::before{border-color:var(--route);background:radial-gradient(var(--route) 0 45%,transparent 50%)}
+.opt input:focus-visible + label{outline:3px solid var(--route);outline-offset:2px}
+.qnav{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+
+/* Resultado */
+.res-head{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 22px}
+.chip{font-family:var(--f-mono);font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:var(--paper);white-space:nowrap}
+.chip.warm{background:var(--route-soft);border-color:var(--route);color:var(--route)}
+.chip.cool{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.routes{display:grid;gap:14px}
+.route{border:1.5px solid var(--ink);border-radius:14px;padding:18px;background:var(--paper)}
+.route h4{font-family:var(--f-display);font-size:20px;margin:6px 0 6px}
+.route p{font-size:15px}
+.route .cond{font-size:13px;color:var(--muted);margin-top:8px}
+.alert{border-left:4px solid var(--route);background:var(--route-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin-bottom:14px;font-size:15px}
+.alert.ok{border-color:var(--teal);background:var(--teal-soft)}
+.steps{margin:20px 0 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+.steps li{display:flex;gap:12px;font-size:15px;counter-increment:s}
+.steps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-family:var(--f-mono);font-size:12px;font-weight:600}
+
+/* Programas */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.filters button{font:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:99px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.prog-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.prog-card h3{font-size:20px;font-weight:700}
+.prog-card .msg{font-family:var(--f-display);font-size:16px;font-weight:500;color:var(--teal)}
+.prog-card .meta{font-size:13px;color:var(--muted);margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Ruta antes/durante/después */
+.phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;position:relative}
+.phase{padding:0 24px 0 0;min-width:0}
+.phase .dot{width:16px;height:16px;border-radius:50%;background:var(--route);margin-bottom:14px;position:relative}
+.phases::before{content:"";position:absolute;left:0;right:0;top:7px;border-top:2px dashed var(--muted)}
+.phase h3{font-size:24px;margin-bottom:10px}
+.phase ul{margin:0;padding-left:18px;display:grid;gap:8px;font-size:15px}
+
+/* Collage */
+.collage{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;align-items:start}
+.polar{background:#fff;color:#0F1E2B;padding:10px 10px 14px;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.18);min-width:0}
+.polar:nth-child(1){transform:rotate(-2deg)}
+.polar:nth-child(2){transform:rotate(1.5deg) translateY(18px)}
+.polar:nth-child(3){transform:rotate(-1deg)}
+.polar:nth-child(4){transform:rotate(2deg) translateY(12px)}
+.slot{display:grid;place-items:center;text-align:center;aspect-ratio:4/5;width:100%;max-width:100%;border-radius:2px;cursor:pointer;background-color:#E5ECE8;background-image:repeating-linear-gradient(135deg,transparent 0 12px,rgba(15,30,43,.06) 12px 24px);background-size:cover;background-position:center;color:#334;font-size:13px;position:relative;overflow:hidden}
+.slot span{background:rgba(255,255,255,.9);padding:6px 10px;border-radius:99px;font-weight:600}
+.slot.has span{display:none}
+.slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.slot:focus-within{outline:3px solid var(--route);outline-offset:2px}
+.polar .mes{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#4F6170;margin-top:10px}
+.polar h3{font-size:18px;margin:2px 0 4px;color:#0F1E2B}
+.polar p{font-size:13.5px;line-height:1.45;color:#2B3B49}
+.uni{margin-top:44px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:center}
+.uni .slot{aspect-ratio:16/9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.voices{display:grid;gap:14px}
+blockquote{margin:0;padding:0 0 0 16px;border-left:4px solid var(--route);font-family:var(--f-display);font-size:19px;line-height:1.3;font-weight:500}
+blockquote cite{display:block;font:400 13px var(--f-body);color:var(--muted);margin-top:6px}
+
+/* FAQ */
+.faq{display:grid;gap:10px;max-width:820px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 18px}
+summary{cursor:pointer;font-weight:600;padding:16px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--f-mono);color:var(--route)}
+details[open] summary::after{content:"–"}
+details p{padding-bottom:16px;color:var(--muted)}
+
+/* Cierre */
+.final{background:var(--ink);color:var(--paper);border-radius:22px;padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:28px;align-items:center}
+.final h2{font-size:clamp(28px,4vw,44px)}
+.final p{opacity:.85;margin-top:12px}
+.final .btn{border-color:var(--paper);color:var(--paper)}
+.final .btn.primary{background:var(--route);border-color:var(--route);color:var(--route-ink)}
+.handle{font-family:var(--f-mono);font-size:15px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:10px;display:inline-block;user-select:all;overflow-wrap:anywhere}
+footer{padding-top:40px;font-size:13px;color:var(--muted);display:grid;gap:14px}
+footer ul{margin:0;padding-left:18px;display:grid;gap:4px}
+footer a{overflow-wrap:anywhere}
+
+@media (max-width:900px){
+  .hero,.quiz,.final,.uni{grid-template-columns:minmax(0,1fr)}
+  .findings{grid-template-columns:minmax(0,1fr)}
+  .collage{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .phases{grid-template-columns:minmax(0,1fr);gap:28px}
+  .phases::before{display:none}
+  .pass{transform:none;box-shadow:6px 6px 0 var(--ink);margin-right:6px}
+  .stamp{right:6px}
+}
+@media (max-width:520px){
+  .collage{grid-template-columns:minmax(0,1fr)}
+  .polar:nth-child(n){transform:none}
+  .brand{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn:hover{transform:none}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio">Encuentra tu <span>ruta</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#test">Test</a>
+      <a href="#programas">Programas</a>
+      <a href="#proceso">Proceso</a>
+      <a href="#historias">Historias</a>
+      <a href="#dudas">Dudas</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="inicio">
+  <div class="hero">
+    <div>
+      <p class="eyebrow">UPB Bucaramanga · Movilidad estudiantil</p>
+      <h1 style="margin-top:14px">¿Y si tu próximo semestre también te acerca a <em>tu futuro</em>?</h1>
+      <p class="lead">Intercambio, práctica, doble titulación o un semestre en otra ciudad de Colombia. Responde 5 preguntas y te mostramos qué opción revisar primero según tu semestre, tu promedio y tu presupuesto.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#test">Haz el test de movilidad →</a>
+        <a class="btn" href="#programas">Ver todas las opciones</a>
+      </div>
+      <div class="facts" aria-label="Datos de la Dirección de Relaciones Internacionales">
+        <div><b>~150</b><span>estudiantes en movilidad al año</span></div>
+        <div><b>~5%</b><span>de la población estudiantil hoy</span></div>
+        <div><b>15–20%</b><span>meta de la ORII</span></div>
+      </div>
+    </div>
+
+    <div class="pass" aria-hidden="true">
+      <div class="pass-head"><span>Pase de abordar</span><span>UPB · ORII</span></div>
+      <div class="pass-route">
+        <span class="code">BGA</span>
+        <svg viewBox="0 0 200 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 6"><path d="M0 12 C 50 -6, 110 30, 190 12"/><path d="M182 6 L192 12 L182 18" stroke-dasharray="0"/></svg>
+        <span class="code q">¿?</span>
+      </div>
+      <div class="pass-city"><span>Bucaramanga</span><span>Tu destino</span></div>
+      <dl class="pass-grid" style="margin:0">
+        <div><dt>Pasajero</dt><dd>Estudiante UPB</dd></div>
+        <div><dt>Semestre</dt><dd>desde 4.º nacional · 5.º internacional</dd></div>
+        <div><dt>Promedio</dt><dd>3,5 · 3,8 para el 50%</dd></div>
+        <div><dt>Equipaje</dt><dd>Créditos homologables</dd></div>
+      </dl>
+      <div class="stamp">Ruta por definir</div>
+    </div>
+  </div>
+
+  <!-- Hallazgos -->
+  <section class="band" id="hallazgos" style="margin-top:24px">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Lo que nos contaron estudiantes de Ingeniería Industrial</p>
+        <h2>Quieren ir. Les falta saber cómo y con qué plata.</h2>
+        <p>Primeros hallazgos de una encuesta corta a 7 estudiantes de 8.º y 9.º semestre. Son pocos casos, sirven para orientar esta página y no para sacar conclusiones de toda la universidad.</p>
+      </div>
+      <div class="findings">
+        <div class="panel">
+          <div class="quote-big">7 de 7</div>
+          <h3>se motivarían con una beca o apoyo económico</h3>
+          <p class="sub">Y 5 de 7 ya han pensado en hacer movilidad.</p>
+          <div class="bars">
+            <div class="bar"><span>Conocen "algo" de las oportunidades</span><span class="n">5</span><span class="track"><span class="fill" style="width:71%"></span></span></div>
+            <div class="bar"><span>Tienen "una idea general" de los requisitos</span><span class="n">5</span><span class="track"><span class="fill" style="width:71%"></span></span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>¿Qué los frena?</h3>
+          <p class="sub">Una respuesta por persona</p>
+          <div class="bars">
+            <div class="bar hot"><span>Costos</span><span class="n">3</span><span class="track"><span class="fill" style="width:43%"></span></span></div>
+            <div class="bar"><span>Requisitos académicos</span><span class="n">2</span><span class="track"><span class="fill" style="width:29%"></span></span></div>
+            <div class="bar"><span>Tiempo</span><span class="n">1</span><span class="track"><span class="fill" style="width:14%"></span></span></div>
+            <div class="bar"><span>Otro</span><span class="n">1</span><span class="track"><span class="fill" style="width:14%"></span></span></div>
+          </div>
+          <p class="note" style="margin-top:14px">Dudas que se repiten: homologación de materias y quién paga el semestre.</p>
+        </div>
+        <div class="panel">
+          <h3>¿Por dónde quieren enterarse?</h3>
+          <p class="sub">Podían elegir más de un canal</p>
+          <div class="bars">
+            <div class="bar"><span>Correo institucional</span><span class="n">6</span><span class="track"><span class="fill" style="width:86%"></span></span></div>
+            <div class="bar hot"><span>WhatsApp / grupo de curso</span><span class="n">4</span><span class="track"><span class="fill" style="width:57%"></span></span></div>
+            <div class="bar hot"><span>Instagram</span><span class="n">3</span><span class="track"><span class="fill" style="width:43%"></span></span></div>
+            <div class="bar"><span>Charlas presenciales</span><span class="n">1</span><span class="track"><span class="fill" style="width:14%"></span></span></div>
+            <div class="bar"><span>Página web UPB</span><span class="n">1</span><span class="track"><span class="fill" style="width:14%"></span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Test -->
+  <section id="test">
+    <div class="quiz">
+      <div class="quiz-side">
+        <p class="eyebrow">5 preguntas · 1 minuto</p>
+        <h2>Encuentra tu ruta</h2>
+        <p>No necesitas revisar 20 páginas para saber por dónde empezar. El test te sugiere qué tipo de movilidad mirar primero y cuál es tu siguiente paso.</p>
+        <p class="note" style="margin:0">Es una orientación. La postulación y las condiciones vigentes las confirma siempre la Dirección de Relaciones Internacionales.</p>
+      </div>
+      <div class="box" id="quizBox" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- Programas -->
+  <section id="programas">
+    <div class="sec-head">
+      <p class="eyebrow">Beneficios y programas</p>
+      <h2>Lo que la UPB ya tiene para ti</h2>
+      <p>Descuentos, convenios, homologación, becas y acompañamiento. Cada tarjeta indica de dónde sale el dato y qué debes verificar en la convocatoria vigente.</p>
+    </div>
+    <div class="filters" role="group" aria-label="Filtrar programas" id="filters"></div>
+    <div class="grid" id="progGrid"></div>
+    <p class="note">Cifras de convenios: según la ORII (2026) hay más de 250 universidades en 48 países. La convocatoria 2024-20 reportó más de 300 convenios en 47 países y el reporte de sostenibilidad 2024 cuenta 25 convenios internacionales de Bucaramanga con otra unidad de conteo. Para consultar un destino concreto, usa el <a href="https://www.upb.edu.co/es/intercambio" target="_blank" rel="noopener">mapa oficial de convenios</a>.</p>
+  </section>
+
+  <!-- Proceso -->
+  <section class="band" id="proceso">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">El proceso</p>
+        <h2>Tu intercambio empieza antes de viajar</h2>
+        <p>La ORII te acompaña de principio a fin. Esto es lo que pasa en cada etapa, según lo que nos explicó su director.</p>
+      </div>
+      <div class="phases">
+        <div class="phase"><div class="dot"></div><h3>Antes</h3>
+          <ul>
+            <li>Hablas con la ORII y revisas universidades y requisitos.</li>
+            <li>La postulación la gestiona la Dirección de Relaciones Internacionales.</li>
+            <li>Preparas la homologación de materias antes de irte.</li>
+            <li>Si aplica, haces el trámite de visa con asesoría de la ORII.</li>
+          </ul></div>
+        <div class="phase"><div class="dot"></div><h3>Durante</h3>
+          <ul>
+            <li>En el primer mes y medio o dos meses envías a la ORII un video y fotos que confirman tu intercambio.</li>
+            <li>Mantienes contacto directo con la oficina, que habla con la universidad de destino por ti.</li>
+            <li>Hay costos que siguen a tu cargo: tiquetes, seguro médico internacional, hospedaje, alimentación y transporte.</li>
+          </ul></div>
+        <div class="phase"><div class="dot"></div><h3>Al regresar</h3>
+          <ul>
+            <li>La universidad socia envía tus notas.</li>
+            <li>Lo que apruebes en el intercambio se reconoce en la UPB Bucaramanga.</li>
+            <li>Tu historia puede ayudar a otros estudiantes a animarse.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Historias / collage -->
+  <section id="historias">
+    <div class="sec-head">
+      <p class="eyebrow">Historias de estudiantes</p>
+      <h2>Cuatro meses de intercambio, mes por mes</h2>
+      <p>Un semestre dura cerca de cuatro meses. Este collage muestra cómo se vive: de la llegada al regreso. Toca cada marco para cargar una foto y ver cómo quedaría.</p>
+    </div>
+    <div class="collage" id="collage"></div>
+
+    <div class="uni">
+      <label class="slot" id="uniSlot"><span>Foto de la universidad de destino</span><input type="file" accept="image/*" aria-label="Cargar foto de la universidad de destino"></label>
+      <div class="voices">
+        <p class="eyebrow">Lo que dicen quienes ya lo hicieron</p>
+        <blockquote>“Es la mejor experiencia que pude vivir. No solo es estudiar, es conocer nuevas culturas y aprender a vivir solo.”<cite>Estudiante UPB con práctica en Francia</cite></blockquote>
+        <blockquote>“Son experiencias inigualables que cambian la vida. Los idiomas abren muchas puertas.”<cite>Estudiante UPB con intercambio</cite></blockquote>
+      </div>
+    </div>
+    <p class="note">Las fotos que cargues aquí solo se ven en tu pantalla y no se guardan. Para publicarlas hay que incluirlas en la página con permiso de cada estudiante.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section id="dudas" style="padding-top:0">
+    <div class="sec-head">
+      <p class="eyebrow">Dudas frecuentes</p>
+      <h2>Lo que más preguntan antes de postularse</h2>
+    </div>
+    <div class="faq">
+      <details><summary>¿Pierdo materias si me voy?</summary><p>Todo lo que cursas y apruebas en el intercambio se reconoce en la UPB Bucaramanga. La homologación se prepara antes de viajar, con la ORII y tu facultad, y se confirma con las notas que envía la universidad socia.</p></details>
+      <details><summary>¿Cuánto cuesta y qué ayudas hay?</summary><p>La UPB da 25% de descuento en matrícula para movilidad nacional (promedio mínimo de 3,5) y 50% para internacional (promedio mínimo de 3,8). Muchos convenios no cobran matrícula en la universidad de destino. Siguen a tu cargo tiquetes, seguro médico, hospedaje, alimentación y transporte. También hay becas por convocatoria.</p></details>
+      <details><summary>¿Desde qué semestre puedo aplicar?</summary><p>Según la información publicada, el intercambio nacional se abre después de 4.º semestre y el internacional desde 5.º, y depende del convenio. La ORII indica que entre 70% y 80% viaja en sus dos últimos semestres, pero tienes más margen si empiezas a planear antes.</p></details>
+      <details><summary>¿Necesito otro idioma?</summary><p>Depende del destino. Un estudiante que buscó una práctica en Francia nos contó que sin un nivel mínimo B1 de francés era casi imposible hacerla. Revisa el idioma de la universidad o empresa de destino desde el principio.</p></details>
+      <details><summary>¿Compito con estudiantes de todas las sedes de la UPB?</summary><p>En algunas convocatorias sí. Las becas con cupos limitados, como KOSPI, tienen primero una selección interna de la UPB y luego compiten con estudiantes de otras universidades. Postular pronto y con documentos completos ayuda.</p></details>
+      <details><summary>¿Puedo trabajar mientras estudio afuera?</summary><p>Es una duda real de varios estudiantes y depende del país y la visa. Pregúntalo a la ORII antes de decidir destino.</p></details>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section style="padding-top:8px">
+    <div class="final">
+      <div>
+        <h2>Encuentra tu ruta. Prepárate. Postúlate.</h2>
+        <p>Si ya sabes qué buscas, escribe a la ORII. Si no, empieza por el test.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#test">Haz el test</a>
+          <a class="btn" href="https://www.upb.edu.co/es/intercambio" target="_blank" rel="noopener">Mapa de convenios UPB ↗</a>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow" style="color:inherit;opacity:.7">Instagram de la ORII</p>
+        <p class="handle">@upbbga.international</p>
+        <p style="font-size:14px">También publican las convocatorias por correo institucional y en los grupos de WhatsApp de cada facultad.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Proyecto Taller 4 · Grupo 1 · Agile Marketing.</b> Diego Fernando Bayona Quezada, Juan Diego Blanco Rueda y Santiago Alexander Daza Castro. Reto 1: conocimiento, acceso y participación en movilidad estudiantil.</p>
+    <p>Fuentes consultadas el 7 de octubre de 2026. Verifica las condiciones en la convocatoria vigente antes de decidir.</p>
+    <ul>
+      <li><a href="https://www.upb.edu.co/es/intercambio/programas-movilidad/intercambio-bilateral" target="_blank" rel="noopener">UPB, Intercambio bilateral</a></li>
+      <li><a href="https://www.upb.edu.co/es/intercambio/programas-movilidad/intercampus-upb" target="_blank" rel="noopener">UPB, Intercampus</a></li>
+      <li><a href="https://www.upb.edu.co/es/intercambio/programas-movilidad/sigueme" target="_blank" rel="noopener">UPB, SÍGUEME</a></li>
+      <li><a href="https://www.upb.edu.co/es/intercambio/programas-movilidad/doble-titulacion" target="_blank" rel="noopener">UPB, Doble titulación</a></li>
+      <li><a href="https://www.upb.edu.co/es/noticias/convocatoria-de-movilidad-2024-upb-orii-bucaramanga-2024" target="_blank" rel="noopener">UPB, Convocatoria de movilidad 2024-20 Bucaramanga</a></li>
+      <li><a href="https://www.upb.edu.co/es/noticias/cuatro-estudiantes-upb-bucaramanga-ganan-beca-kospie-alemania-2025-2026" target="_blank" rel="noopener">UPB, Beca KOSPIE Alemania 2025-2026</a></li>
+      <li>Entrevista a la Dirección de Relaciones Internacionales UPB Bucaramanga, encuesta a estudiantes y testimonios propios del proyecto.</li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+(function(){
+  /* ---------- Programas ---------- */
+  var PROGS=[
+    {n:'Intercambio bilateral',s:['co','ext'],msg:'Cursa parte de tu carrera en otra universidad sin perder el hilo de tu plan de estudios.',val:'1 o 2 semestres con homologación de créditos aprobados, desarrollo intercultural y contactos.',cond:'Promedio acumulado mínimo 3,5. Internacional desde 5.º semestre y nacional desde 4.º, según el convenio.',src:'UPB, Intercambio bilateral · consultado 7 oct. 2026',tags:['Colombia o exterior']},
+    {n:'Descuento por movilidad internacional',s:['ext','beca'],msg:'Tu semestre internacional puede tener un apoyo económico real.',val:'50% de descuento en matrícula.',cond:'La ORII indica promedio mínimo de 3,8. Confirma la aplicación en la convocatoria vigente.',src:'Convocatoria 2024-20 y entrevista ORII',tags:['Exterior','Apoyo económico']},
+    {n:'Descuento por movilidad nacional',s:['co','beca'],msg:'No necesitas salir del país para vivir movilidad.',val:'25% de descuento en matrícula.',cond:'Promedio mínimo de 3,5. Confirma la aplicación en la convocatoria vigente.',src:'Convocatoria 2024-20 y entrevista ORII',tags:['Colombia','Apoyo económico']},
+    {n:'Matrícula en la universidad de destino',s:['ext','beca'],msg:'Primero revisa el convenio: puede que no pagues matrícula en destino.',val:'En más del 90% de las universidades en convenio se reportó exención de matrícula.',cond:'Depende de cada universidad y convenio. Dato de la convocatoria 2024-20.',src:'UPB, Convocatoria movilidad Bucaramanga',tags:['Exterior','Apoyo económico']},
+    {n:'Intercampus UPB',s:['co'],msg:'Conoce otra UPB sin salir de Colombia.',val:'Movilidad entre Medellín, Bucaramanga, Montería y Palmira, con reconocimiento de tu condición de estudiante UPB.',cond:'Hasta 2 semestres, promedio mínimo 3,5, después de 4.º semestre. 25% de descuento según la página actual.',src:'UPB, Intercampus',tags:['Colombia']},
+    {n:'SÍGUEME',s:['co'],msg:'Estudia un semestre en otra universidad colombiana y amplía tu red.',val:'Movilidad entre universidades colombianas participantes. Las materias pueden ser reconocidas por la UPB.',cond:'Promedio mínimo 3,5 y autorización del director. Los cupos dependen de cada institución.',src:'UPB, SÍGUEME',tags:['Colombia']},
+    {n:'Doble titulación',s:['ext'],msg:'Una experiencia internacional que puede terminar en dos títulos.',val:'Título UPB y título de una universidad extranjera con convenio, de pregrado o maestría.',cond:'No aplica a todos los programas. Muchos convenios no cobran matrícula en destino.',src:'UPB, Doble titulación',tags:['Exterior']},
+    {n:'Prácticas internacionales',s:['ext'],msg:'No solo estudies afuera: lleva tu formación a una experiencia profesional.',val:'Práctica investigativa o empresarial en plazas gestionadas por la ORII.',cond:'Requiere aval de la Facultad. Revisa el idioma exigido por la plaza.',src:'UPB, Movilidad internacional',tags:['Exterior']},
+    {n:'Cursos de verano e inmersiones',s:['ext'],msg:'Si un semestre completo no es para ti, empieza con una experiencia corta.',val:'Cursos cortos de idioma o de profundización en temas específicos.',cond:'La oferta depende de las universidades aliadas y de la convocatoria.',src:'UPB, Movilidad internacional',tags:['Exterior']},
+    {n:'Becas externas: Alianza del Pacífico, PILA, AUIP, ELAP',s:['beca','ext'],msg:'No te quedes solo con el intercambio: revisa también las becas.',val:'Movilidad con apoyo financiero, incluidas becas del 100% como Alianza del Pacífico y ELAP (Canadá).',cond:'No son permanentes. Compites primero con estudiantes de la UPB y luego con otras universidades.',src:'UPB, convocatorias y entrevista ORII',tags:['Beca','Por convocatoria']},
+    {n:'KOSPIE · Alemania',s:['beca','ext'],msg:'Ingeniería UPB también puede abrirte una ruta financiada hacia Alemania.',val:'Un año en Alemania con curso de alemán, semestre académico y práctica. En la cohorte 2025-2026 la financiación fue completa.',cond:'Cohorte 2025-2026: 15% superior, 60% de la carrera, inglés B2 y alemán. 4 estudiantes UPB seleccionados. No asumas que se abre cada año.',src:'UPB, KOSPIE 2025-2026',tags:['Beca','Ingeniería']},
+    {n:'Acompañamiento de la ORII',s:['co','ext'],msg:'No tienes que descubrir el proceso solo.',val:'Asesoría sobre opciones, documentos, universidad de destino, visa y logística, y seguimiento durante la estancia.',cond:'El alcance depende del proceso y la convocatoria.',src:'UPB, Movilidad internacional',tags:['Todos']}
+  ];
+  var FILTERS=[['all','Todos'],['co','En Colombia'],['ext','En el exterior'],['beca','Becas y apoyo económico']];
+  var cur='all';
+  var fBox=document.getElementById('filters'),grid=document.getElementById('progGrid');
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function renderProgs(){
+    fBox.innerHTML=FILTERS.map(function(f){return '<button type="button" data-f="'+f[0]+'" aria-pressed="'+(cur===f[0])+'">'+f[1]+'</button>'}).join('');
+    grid.innerHTML=PROGS.filter(function(p){return cur==='all'||p.s.indexOf(cur)>-1}).map(function(p){
+      return '<article class="prog-card"><div class="tags">'+p.tags.map(function(t){return '<span class="chip">'+esc(t)+'</span>'}).join('')+'</div><h3>'+esc(p.n)+'</h3><p class="msg">“'+esc(p.msg)+'”</p><p>'+esc(p.val)+'</p><p class="meta"><b>Condición:</b> '+esc(p.cond)+'<br>Fuente: '+esc(p.src)+'</p></article>';
+    }).join('');
+  }
+  fBox.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;cur=b.getAttribute('data-f');renderProgs()});
+  renderProgs();
+
+  /* ---------- Test ---------- */
+  var Q=[
+    {k:'sem',t:'¿En qué semestre estás?',o:[['lt4','De 1.º a 3.º'],['4','4.º semestre'],['5p','5.º o más']]},
+    {k:'dest',t:'¿Dónde te imaginas estudiando?',o:[['co','En Colombia','Otra sede UPB u otra universidad'],['ext','En el exterior'],['any','Me da igual, quiero ver opciones']]},
+    {k:'goal',t:'¿Qué quieres vivir?',o:[['estudiar','Cursar un semestre o dos','Materias que cuenten para mi plan de estudios'],['practica','Hacer una práctica profesional'],['titulo','Sacar un segundo título'],['corto','Algo corto','Curso de verano o inmersión']]},
+    {k:'prom',t:'¿Cómo va tu promedio acumulado?',o:[['hi','3,8 o más'],['mid','Entre 3,5 y 3,79'],['lo','Menos de 3,5']]},
+    {k:'money',t:'¿Cómo estás con el presupuesto?',o:[['beca','Necesito beca o apoyo para poder ir'],['parcial','Puedo cubrir una parte'],['cubro','Puedo cubrir los gastos con el descuento']]}
+  ];
+  var A={},step=0,box=document.getElementById('quizBox');
+  function qHTML(){
+    var q=Q[step],bars=Q.map(function(_,i){return '<i class="'+(i<=step?'on':'')+'"></i>'}).join('');
+    var opts=q.o.map(function(o,i){
+      var id='q'+step+'_'+i;
+      return '<div class="opt"><input type="radio" name="q'+step+'" id="'+id+'" value="'+o[0]+'"'+(A[q.k]===o[0]?' checked':'')+'><label for="'+id+'"><span>'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</span></label></div>';
+    }).join('');
+    return '<div class="prog" aria-hidden="true">'+bars+'</div><p class="qnum">Pregunta '+(step+1)+' de '+Q.length+'</p><h3>'+q.t+'</h3><fieldset class="opts"><legend class="sr" style="position:absolute;left:-9999px">'+q.t+'</legend>'+opts+'</fieldset><div class="qnav"><button type="button" class="btn small" id="back"'+(step===0?' disabled':'')+'>← Atrás</button><button type="button" class="btn primary small" id="next"'+(A[q.k]?'':' disabled')+'>'+(step===Q.length-1?'Ver mi ruta':'Siguiente →')+'</button></div>';
+  }
+  function showQ(){
+    box.innerHTML=qHTML();
+    var q=Q[step];
+    box.querySelectorAll('input[type=radio]').forEach(function(r){r.addEventListener('change',function(){A[q.k]=r.value;box.querySelector('#next').disabled=false})});
+    box.querySelector('#back').addEventListener('click',function(){if(step>0){step--;showQ()}});
+    box.querySelector('#next').addEventListener('click',function(){if(!A[q.k])return;if(step<Q.length-1){step++;showQ()}else{showResult()}});
+  }
+  function P(name){return PROGS.filter(function(p){return p.n.indexOf(name)===0})[0]}
+  function card(p,extra){return '<div class="route"><span class="chip cool">'+esc(p.tags[0])+'</span><h4>'+esc(p.n)+'</h4><p>'+esc(p.val)+'</p><p class="cond"><b>Condición:</b> '+esc(p.cond)+(extra?' '+esc(extra):'')+'</p></div>'}
+  function showResult(){
+    var routes=[],alerts=[],a=A;
+    var wantCo=a.dest==='co'||a.dest==='any',wantExt=a.dest==='ext'||a.dest==='any';
+    if(a.goal==='estudiar'){
+      if(wantCo){routes.push(card(P('Intercampus')));routes.push(card(P('SÍGUEME')))}
+      if(wantExt){routes.push(card(P('Intercambio bilateral'),'Para el exterior, revisa el idioma de la universidad.'))}
+    }else if(a.goal==='practica'){routes.push(card(P('Prácticas internacionales')));
+      if(a.dest==='co')alerts.push(['','Las prácticas que gestiona la ORII son internacionales. Si prefieres quedarte en Colombia, pregunta en tu facultad por opciones de práctica con movilidad.'])
+    }else if(a.goal==='titulo'){routes.push(card(P('Doble titulación')));
+      if(a.dest==='co')alerts.push(['','La doble titulación es con universidades del exterior.'])
+    }else{routes.push(card(P('Cursos de verano')))}
+    if(a.sem==='lt4')alerts.push(['','Todavía no llegas al semestre mínimo. El nacional abre después de 4.º y el internacional desde 5.º. Es buen momento para subir el promedio, mejorar idiomas y ahorrar.']);
+    if(a.sem==='4'&&(a.dest!=='co'||a.goal!=='estudiar'))alerts.push(['','Con 4.º semestre ya puedes mirar movilidad nacional. Para el exterior, la mayoría de convenios piden 5.º semestre, así que usa este tiempo para preparar documentos e idioma.']);
+    if(a.prom==='lo')alerts.push(['','Con promedio menor a 3,5 todavía no cumples el mínimo de los intercambios. Hablar con la ORII y con tu director de programa te ayuda a trazar un plan para llegar.']);
+    if(a.prom==='mid'&&wantExt)alerts.push(['ok','Con 3,5 a 3,79 cumples el mínimo para intercambio y el descuento nacional del 25%. El descuento internacional del 50% pide 3,8.']);
+    if(a.prom==='hi')alerts.push(['ok','Con 3,8 o más cumples el promedio para el descuento del 50% en movilidad internacional y para el 25% en la nacional.']);
+    var money=[];
+    if(a.money!=='cubro'){
+      if(wantExt&&a.prom!=='lo'){routes.push(card(P('Becas externas')))}
+      if(wantExt&&a.prom==='hi'&&a.sem==='5p'&&a.goal!=='corto'){routes.push(card(P('KOSPIE'),'Aplica a estudiantes de Ingeniería.'))}
+      if(a.dest==='co'&&a.prom!=='lo'){alerts.push(['ok','En Colombia, el descuento del 25% es el apoyo principal. Los tiquetes y la manutención dependen de la ciudad y del convenio, así que pregunta por costos antes de postular.'])}
+    }
+    if(wantExt&&a.money!=='cubro')alerts.push(['','Aunque tengas descuento o beca parcial, siguen a tu cargo tiquetes, seguro médico, hospedaje, alimentación y transporte. Haz tu presupuesto antes de elegir destino.']);
+    var labels={sem:{lt4:'1.º a 3.º',4:'4.º semestre','5p':'5.º o más'},dest:{co:'Colombia',ext:'Exterior',any:'Colombia o exterior'},goal:{estudiar:'Semestre de estudio',practica:'Práctica',titulo:'Doble titulación',corto:'Experiencia corta'},prom:{hi:'Promedio ≥ 3,8',mid:'Promedio 3,5 a 3,79',lo:'Promedio < 3,5'},money:{beca:'Necesito apoyo',parcial:'Cubro una parte',cubro:'Cubro los gastos'}};
+    var chips=Q.map(function(q){return '<span class="chip">'+labels[q.k][a[q.k]]+'</span>'}).join('');
+    box.innerHTML='<p class="qnum">Tu ruta sugerida</p><h3>Esto es lo primero que deberías revisar</h3><div class="res-head">'+chips+'</div>'
+      +alerts.map(function(x){return '<div class="alert '+x[0]+'">'+x[1]+'</div>'}).join('')
+      +'<div class="routes">'+routes.join('')+'</div>'
+      +'<ol class="steps"><li>Verifica requisitos, fechas y condiciones en la convocatoria vigente.</li><li>Escribe a la ORII por Instagram (@upbbga.international) o pasa por la oficina para confirmar tu caso.</li><li>Pide a tu facultad cómo quedaría la homologación de tus materias antes de postularte.</li></ol>'
+      +'<div class="qnav"><button type="button" class="btn small" id="redo">Repetir el test</button><a class="btn primary small" href="#programas">Ver todas las opciones</a></div>';
+    box.querySelector('#redo').addEventListener('click',function(){A={};step=0;showQ()});
+    var top=box.getBoundingClientRect().top;if(top<0||top>window.innerHeight*0.5){box.scrollIntoView({behavior:'smooth',block:'start'})}
+  }
+  showQ();
+
+  /* ---------- Collage de 4 meses ---------- */
+  var MESES=[
+    ['Mes 1','Llegada','Nuevo país, nuevo ritmo. Los miedos más comunes antes de viajar son el idioma, vivir solo y moverse por la ciudad.'],
+    ['Mes 2','Primer reporte','Entre mes y medio y dos meses envías a la ORII un video y fotos que confirman tu intercambio.'],
+    ['Mes 3','Clases y cultura','Cursas materias que cuentan para tu plan de estudios y conoces regiones, costumbres y personas distintas.'],
+    ['Mes 4','Cierre y regreso','La universidad socia envía tus notas y lo que apruebas se reconoce en la UPB Bucaramanga.']
+  ];
+  var col=document.getElementById('collage');
+  col.innerHTML=MESES.map(function(m,i){
+    return '<figure class="polar" style="margin:0"><label class="slot" data-slot><span>Tu foto del '+m[0].toLowerCase()+'</span><input type="file" accept="image/*" aria-label="Cargar foto del '+m[0]+'"></label><p class="mes">'+m[0]+' de 4</p><h3>'+m[1]+'</h3><p>'+m[2]+'</p></figure>';
+  }).join('');
+  function wire(slot){
+    var inp=slot.querySelector('input');
+    inp.addEventListener('change',function(){
+      var f=inp.files&&inp.files[0];if(!f)return;
+      var r=new FileReader();
+      r.onload=function(){slot.style.backgroundImage='url("'+r.result+'")';slot.classList.add('has')};
+      r.readAsDataURL(f);
+    });
+  }
+  document.querySelectorAll('.slot').forEach(wire);
+})();
+</script>
